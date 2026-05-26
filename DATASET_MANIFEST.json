@@ -1,0 +1,14 @@
+{
+  "count": 1400,
+  "allTypeApi": true,
+  "uniqueSlugs": true,
+  "verifiedDirectCount": 108,
+  "providerBackedCount": 1292,
+  "comparisonPrebuildLimit": 20,
+  "createdAt": "2026-05-22",
+  "defaultPrebuildApiLimit": 10,
+  "defaultPrebuildAlternativesLimit": 10,
+  "defaultPrebuildComparisonLimit": 20,
+  "dynamicParams": true,
+  "buildVerified": "npm run build OK with default prebuild limits"
+}
