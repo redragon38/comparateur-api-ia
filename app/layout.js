@@ -6,7 +6,7 @@ import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — comparateur d’API IA`,
+    default: `${SITE_NAME} — comparateur d'API IA`,
     template: `%s | ${SITE_NAME}`
   },
   description: DEFAULT_DESCRIPTION,
@@ -29,6 +29,20 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEWMBXBBZW" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-SEWMBXBBZW');
+            `,
+          }}
+        />
+      </head>
       <body>
         <Header />
         <main>{children}</main>
