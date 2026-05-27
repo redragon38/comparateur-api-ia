@@ -91,6 +91,6 @@ export function middleware(request: NextRequest) {
 // Appliquer le middleware à toutes les routes SAUF les assets statiques
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|logos/|public/|sitemap.xml|robots.txt).*)',
+    '/((?!_next/static|_next/image|favicon.ico|logos/|public/).*)',
   ],
 };
