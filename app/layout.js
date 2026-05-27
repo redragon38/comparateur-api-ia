@@ -1,4 +1,5 @@
 import '@/styles/globals.css';
+import Script from 'next/script';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
@@ -47,6 +48,8 @@ export default function RootLayout({ children }) {
         <Header />
         <main>{children}</main>
         <Footer />
+        {/* Dashboard tracker — envoie les événements au dashboard analytics */}
+        <Script src="/tracker.js" strategy="afterInteractive" />
       </body>
     </html>
   );
