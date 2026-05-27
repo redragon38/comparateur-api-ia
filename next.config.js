@@ -156,7 +156,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: '/((?!sitemap.xml|robots.txt).*)',
         headers: securityHeaders,
       },
       {
