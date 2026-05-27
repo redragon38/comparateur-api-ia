@@ -47,9 +47,8 @@ button, input, select, textarea { font: inherit; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 15px 0; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 950; font-size: 1.05rem; letter-spacing: -.02em; }
 .brand-mark {
-  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px;
-  background: transparent; color: #fff; letter-spacing: -.05em;
-  overflow: hidden;
+  width: 40px; height: 40px; display: grid; place-items: center;
+  background: none; flex: 0 0 40px;
 }
 .main-nav { display: flex; align-items: center; gap: 18px; color: var(--muted); font-weight: 800; }
 .main-nav a { padding: 8px 2px; }
@@ -170,6 +169,13 @@ h3 { font-size: 1.12rem; }
 .cta-box { padding: 28px; }
 .contact-form { display: grid; gap: 16px; margin-top: 24px; }
 .form-note, .legal-content p { color: var(--muted); }
+.legal-content h2 { font-size: 1.25rem; margin: 2rem 0 .6rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+.legal-content h3 { font-size: 1rem; margin: 1.4rem 0 .4rem; color: var(--text); }
+.legal-content ul { color: var(--muted); padding-left: 1.4rem; margin: .5rem 0 1rem; }
+.legal-content ul li { margin-bottom: .3rem; }
+.legal-content a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.legal-content a:hover { color: var(--primary-dark); }
+.legal-content table th, .legal-content table td { font-size: .88rem; }
 .site-footer { border-top: 1px solid #1e293b; background: #0f172a; color: #cbd5e1; padding: 42px 0; }
 .footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 24px; }
 .footer-title { color: #fff; font-weight: 950; margin-top: 0; }
