@@ -48,8 +48,8 @@ button, input, select, textarea { font: inherit; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 950; font-size: 1.05rem; letter-spacing: -.02em; }
 .brand-mark {
   width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px;
-  background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; letter-spacing: -.05em;
-  box-shadow: 0 10px 24px rgba(124,58,237,.24);
+  background: transparent; color: #fff; letter-spacing: -.05em;
+  overflow: hidden;
 }
 .main-nav { display: flex; align-items: center; gap: 18px; color: var(--muted); font-weight: 800; }
 .main-nav a { padding: 8px 2px; }

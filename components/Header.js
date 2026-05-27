@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { SITE_NAME } from '@/lib/site';
 
 export default function Header() {
@@ -6,7 +7,16 @@ export default function Header() {
     <header className="site-header">
       <div className="container header-inner">
         <Link href="/" className="brand" aria-label="Accueil">
-          <span className="brand-mark">API</span>
+          <span className="brand-mark">
+            <Image
+              src="/logo.png"
+              alt={`Logo ${SITE_NAME}`}
+              width={32}
+              height={32}
+              style={{ objectFit: 'contain', display: 'block' }}
+              priority
+            />
+          </span>
           <span>{SITE_NAME}</span>
         </Link>
         <nav className="main-nav" aria-label="Navigation principale">

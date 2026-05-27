@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { SITE_NAME } from '@/lib/site';
 
 export default function Footer() {
@@ -6,7 +7,10 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <p className="footer-title">{SITE_NAME}</p>
+          <p className="footer-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Image src="/logo.png" alt={`Logo ${SITE_NAME}`} width={24} height={24} style={{ objectFit: 'contain' }} />
+            {SITE_NAME}
+          </p>
           <p>Comparateur SEO d’API IA réelles, généré automatiquement depuis un fichier JSON.</p>
         </div>
         <div>
