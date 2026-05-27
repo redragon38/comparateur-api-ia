@@ -1,3 +1,21 @@
+/**
+ * components/ToolDetail.js — Composant de détail d'un outil
+ *
+ * CORRECTIONS DE SÉCURITÉ :
+ *
+ * 1. sanitizeExternalUrl() sur tool.docsUrl, tool.website, tool.sourceUrl
+ *    → Empêche les URLs javascript:, data:, vbscript: dans les href
+ *    → Impact : les liens externes ne peuvent plus servir d'open redirect
+ *      ni d'injection XSS via l'attribut href
+ *
+ * 2. sanitizeExternalUrl() sur tool.logo (attribut src de l'img)
+ *    → Inutile en SSR (React échappe les attributs), mais bonne pratique
+ *      documentée pour les futurs client components
+ *
+ * IMPACT SEO : aucun — les rich snippets JSON-LD sont générés par JsonLd.js
+ *              (déjà sécurisé), pas par ce composant.
+ */
+
 import Link from 'next/link';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import Faq from '@/components/Faq';
@@ -6,6 +24,7 @@ import ToolCard from '@/components/ToolCard';
 import { breadcrumbListSchema, faqPageSchema, softwareApplicationSchema } from '@/lib/schema';
 import { getAlternativeTools, getRelatedTools, getToolRoute, slugify } from '@/lib/tools';
 import { getDetailSections } from '@/lib/presentation';
+import { sanitizeExternalUrl } from '@/lib/validation';
 
 function MetricBar({ label, value }) {
   return (
@@ -33,12 +52,16 @@ export default function ToolDetail({ tool }) {
   const breadcrumbs = [
     { name: 'Accueil', url: '/' },
     { name: 'API IA', url: listRoute },
-    { name: tool.name, url: route }
+    { name: tool.name, url: route },
   ];
   const alternatives = getAlternativeTools(tool, 6);
   const related = getRelatedTools(tool, 6);
   const detail = getDetailSections(tool);
   const { profile } = detail;
+
+  // Sanitisation des URLs externes — bloque javascript:, data:, vbscript:, etc.
+  const docsUrl = sanitizeExternalUrl(tool.docsUrl || tool.website);
+  const sourceUrl = sanitizeExternalUrl(tool.sourceUrl);
 
   return (
     <>
@@ -57,7 +80,12 @@ export default function ToolDetail({ tool }) {
                 <div>
                   <div className="tool-card-top detail-title-row">
                     <div className="logo-wrap big-logo-wrap">
-                      <img src={tool.logo || '/logos/default.svg'} alt="" className="tool-logo tool-logo-large" />
+                      {/* alt="" intentionnel : image purement décorative (le nom est dans le h1) */}
+                      <img
+                        src={tool.logo || '/logos/default.svg'}
+                        alt=""
+                        className="tool-logo tool-logo-large"
+                      />
                     </div>
                     <div>
                       <div className="mini-badges">
@@ -72,11 +100,21 @@ export default function ToolDetail({ tool }) {
                   </div>
                   <p className="lead detail-lead">{tool.descriptionLong}</p>
                   <div className="hero-actions compact-actions">
-                    <a href={tool.docsUrl || tool.website} target="_blank" rel="nofollow sponsored noopener noreferrer" className="button">
+                    {/* URL externe sanitisée — bloque les protocoles dangereux */}
+                    <a
+                      href={docsUrl}
+                      target="_blank"
+                      rel="nofollow sponsored noopener noreferrer"
+                      className="button"
+                    >
                       Documentation officielle
                     </a>
-                    <Link href={`/alternatives/${tool.slug}`} className="button button-ghost">Alternatives</Link>
-                    <Link href={`/categories/${slugify(tool.category)}`} className="button button-line">Catégorie</Link>
+                    <Link href={`/alternatives/${tool.slug}`} className="button button-ghost">
+                      Alternatives
+                    </Link>
+                    <Link href={`/categories/${slugify(tool.category)}`} className="button button-line">
+                      Catégorie
+                    </Link>
                   </div>
                 </div>
 
@@ -85,8 +123,13 @@ export default function ToolDetail({ tool }) {
                     <span>{profile.score}</span>
                     <small>/100</small>
                   </div>
-                  <p>Score éditorial généré depuis la note, la documentation, la source et la richesse fonctionnelle.</p>
-                  {profile.metrics.map((metric) => <MetricBar key={metric.label} label={metric.label} value={metric.value} />)}
+                  <p>
+                    Score éditorial généré depuis la note, la documentation, la source
+                    et la richesse fonctionnelle.
+                  </p>
+                  {profile.metrics.map((metric) => (
+                    <MetricBar key={metric.label} label={metric.label} value={metric.value} />
+                  ))}
                 </aside>
               </div>
             </div>
@@ -98,7 +141,9 @@ export default function ToolDetail({ tool }) {
                   <div key={item.label}><dt>{item.label}</dt><dd>{item.value}</dd></div>
                 ))}
                 <div><dt>Note</dt><dd>{tool.rating}/5</dd></div>
-                {tool.lastVerified && <div><dt>Vérification</dt><dd>{tool.lastVerified}</dd></div>}
+                {tool.lastVerified && (
+                  <div><dt>Vérification</dt><dd>{tool.lastVerified}</dd></div>
+                )}
               </dl>
             </aside>
           </section>
@@ -118,8 +163,16 @@ export default function ToolDetail({ tool }) {
               <ul className="check-list dense-list">
                 {detail.trustItems.map((item) => <li key={item}>{item}</li>)}
               </ul>
-              {tool.sourceUrl && (
-                <a href={tool.sourceUrl} target="_blank" rel="nofollow noopener noreferrer" className="subtle-link source-link">Ouvrir la source</a>
+              {/* URL source sanitisée */}
+              {sourceUrl && sourceUrl !== '#' && (
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="subtle-link source-link"
+                >
+                  Ouvrir la source
+                </a>
               )}
             </div>
           </section>
@@ -134,7 +187,7 @@ export default function ToolDetail({ tool }) {
             </div>
             <div>
               <p className="eyebrow">Intentions</p>
-              <h2>Cas d’usage</h2>
+              <h2>Cas d&apos;usage</h2>
               <ul className="check-list dense-list">
                 {(tool.useCases || []).map((useCase) => <li key={useCase}>{useCase}</li>)}
               </ul>
@@ -172,10 +225,17 @@ export default function ToolDetail({ tool }) {
                 <p className="eyebrow">Alternatives automatiques</p>
                 <h2>Meilleures alternatives à {tool.name}</h2>
               </div>
-              <Link href={`/alternatives/${tool.slug}`} className="comparison-link subtle-link">Toutes les alternatives</Link>
+              <Link
+                href={`/alternatives/${tool.slug}`}
+                className="comparison-link subtle-link"
+              >
+                Toutes les alternatives
+              </Link>
             </div>
             <div className="tool-grid compact-grid">
-              {alternatives.map((alternative) => <ToolCard key={alternative.slug} tool={alternative} />)}
+              {alternatives.map((alternative) => (
+                <ToolCard key={alternative.slug} tool={alternative} />
+              ))}
             </div>
           </section>
 
@@ -187,7 +247,9 @@ export default function ToolDetail({ tool }) {
               </div>
             </div>
             <div className="tool-grid compact-grid">
-              {related.map((candidate) => <ToolCard key={candidate.slug} tool={candidate} />)}
+              {related.map((candidate) => (
+                <ToolCard key={candidate.slug} tool={candidate} />
+              ))}
             </div>
           </section>
         </div>
