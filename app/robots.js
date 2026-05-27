@@ -7,6 +7,7 @@ export default function robots() {
       allow: '/',
       disallow: ['/api/', '/admin/', '/private/']
     },
-    sitemap: `${SITE_URL}/sitemap.xml`
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL
   };
 }
