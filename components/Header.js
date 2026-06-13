@@ -23,6 +23,7 @@ export default function Header() {
           <Link href="/">Accueil</Link>
           <Link href="/api-ia">API IA</Link>
           <Link href="/categories">Catégories</Link>
+          <Link href="/comparatifs">Comparatifs</Link>
           <Link href="/contact">Contact</Link>
         </nav>
       </div>

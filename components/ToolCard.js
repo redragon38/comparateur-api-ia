@@ -45,7 +45,7 @@ export default function ToolCard({ tool }) {
 
       <div className="reference-card-head">
         <div className="reference-logo-box">
-          <img src={tool.logo || '/logos/default.svg'} alt="" className="tool-logo" loading="lazy" />
+          <img src={tool.logo || '/logos/default.svg'} alt={`Logo ${tool.name}`} className="tool-logo" width="48" height="48" loading="lazy" decoding="async" />
           <span className="reference-star" aria-hidden="true">★</span>
         </div>
 

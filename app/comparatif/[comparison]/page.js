@@ -22,18 +22,24 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Faq from '@/components/Faq';
 import JsonLd from '@/components/JsonLd';
-import { breadcrumbListSchema } from '@/lib/schema';
+import { breadcrumbListSchema, faqPageSchema } from '@/lib/schema';
+import { getComparisonContent } from '@/lib/content';
 import { getComparisonPairs, getToolBySlug, getToolRoute, parseComparisonSlug } from '@/lib/tools';
 import { validateComparisonSlug, validateSlug, sanitizeText } from '@/lib/validation';
 
 export const dynamicParams = true;
+// Revalidation ISR : pages servies en cache, rafraîchies périodiquement.
+export const revalidate = 86400;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? null
-      : Number(process.env.PREBUILD_COMPARISON_LIMIT || 20);
+  // Pré-génère les comparatifs prioritaires au build ; le reste (~4 900) est
+  // rendu à la demande puis mis en cache (ISR). PREBUILD_COMPARISON_LIMIT=0
+  // (ou 'all') force la pré-génération de toutes les paires.
+  const raw = process.env.PREBUILD_COMPARISON_LIMIT;
+  if (raw === 'all' || raw === '0') return getComparisonPairs(null);
+  const limit = raw ? Number(raw) : 300;
   return getComparisonPairs(limit);
 }
 
@@ -61,7 +67,21 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
+    keywords: [
+      `${first.name} vs ${second.name}`,
+      `${second.name} vs ${first.name}`,
+      `comparatif ${first.name} ${second.name}`,
+      `${first.name} ou ${second.name}`,
+      'comparatif API IA',
+    ],
     alternates: { canonical: `/comparatif/${first.slug}-vs-${second.slug}` },
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      url: `/comparatif/${first.slug}-vs-${second.slug}`,
+    },
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 
@@ -97,17 +117,17 @@ export default async function ComparisonPage({ params }) {
     { name: `${first.name} vs ${second.name}`, url: `/comparatif/${first.slug}-vs-${second.slug}` },
   ];
 
+  const content = getComparisonContent(first, second);
+
   return (
     <>
       <JsonLd data={breadcrumbListSchema(breadcrumbs)} />
+      <JsonLd data={faqPageSchema(content.faq)} />
       <div className="container page-shell">
         <Breadcrumbs items={breadcrumbs} />
         <p className="eyebrow">Comparatif API IA</p>
         <h1>{first.name} vs {second.name} : lequel choisir ?</h1>
-        <p className="lead">
-          Comparaison automatique basée sur les données JSON : prix, catégorie, note,
-          fonctionnalités, cas d&apos;usage, avantages, limites et sources officielles.
-        </p>
+        <p className="lead">{content.intro}</p>
 
         <section className="comparison-table-wrap">
           <table className="comparison-table">
@@ -138,6 +158,17 @@ export default async function ComparisonPage({ params }) {
           <FeatureList title={`Avantages de ${second.name}`} items={second.pros} />
         </section>
 
+        <section className="content-grid section-block">
+          <div className="pros-card">
+            <h2>Quand choisir {first.name} ?</h2>
+            <p>{content.whenFirst}</p>
+          </div>
+          <div className="pros-card">
+            <h2>Quand choisir {second.name} ?</h2>
+            <p>{content.whenSecond}</p>
+          </div>
+        </section>
+
         <section className="section-block cta-box">
           <h2>Verdict rapide</h2>
           <p>
@@ -149,6 +180,23 @@ export default async function ComparisonPage({ params }) {
           <div className="hero-actions">
             <Link className="button" href={getToolRoute(first)}>Voir {first.name}</Link>
             <Link className="button button-ghost" href={getToolRoute(second)}>Voir {second.name}</Link>
+          </div>
+        </section>
+
+        <Faq faq={content.faq} />
+
+        <section className="section-block">
+          <div className="section-heading compact-heading">
+            <div>
+              <p className="eyebrow">Aller plus loin</p>
+              <h2>Alternatives et fiches détaillées</h2>
+            </div>
+          </div>
+          <div className="link-grid">
+            <Link className="comparison-link" href={`/alternatives/${first.slug}`}>Alternatives à {first.name}</Link>
+            <Link className="comparison-link" href={`/alternatives/${second.slug}`}>Alternatives à {second.name}</Link>
+            <Link className="comparison-link" href={getToolRoute(first)}>Fiche complète {first.name}</Link>
+            <Link className="comparison-link" href={getToolRoute(second)}>Fiche complète {second.name}</Link>
           </div>
         </section>
       </div>

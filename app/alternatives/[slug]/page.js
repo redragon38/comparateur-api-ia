@@ -10,19 +10,24 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import Faq from '@/components/Faq';
 import JsonLd from '@/components/JsonLd';
 import ToolCard from '@/components/ToolCard';
-import { breadcrumbListSchema } from '@/lib/schema';
+import { breadcrumbListSchema, faqPageSchema } from '@/lib/schema';
+import { getAlternativesContent } from '@/lib/content';
 import { getAllTools, getAlternativeTools, getToolBySlug, getToolRoute } from '@/lib/tools';
 import { validateSlug, sanitizeText } from '@/lib/validation';
 
 export const dynamicParams = true;
+// Revalidation ISR : pages servies en cache, rafraîchies périodiquement.
+export const revalidate = 86400;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? Infinity
-      : Number(process.env.PREBUILD_ALTERNATIVES_LIMIT || 10);
+  // Par défaut : pré-génère toutes les pages alternatives au build.
+  // Surchargeable via PREBUILD_ALTERNATIVES_LIMIT pour borner le temps de build.
+  const limit = process.env.PREBUILD_ALTERNATIVES_LIMIT
+    ? Number(process.env.PREBUILD_ALTERNATIVES_LIMIT)
+    : Infinity;
   return getAllTools().slice(0, limit).map((tool) => ({ slug: tool.slug }));
 }
 
@@ -35,17 +40,29 @@ export async function generateMetadata({ params }) {
   if (!tool) return {};
 
   const toolName = sanitizeText(tool.name, 80);
+  const title = sanitizeText(
+    `Alternatives à ${toolName} : comparatif des meilleurs concurrents`,
+    120
+  );
+  const description = sanitizeText(
+    `Découvrez les meilleures alternatives à ${toolName}, avec prix, fonctionnalités, cas d'usage, avantages, limites et comparatifs.`,
+    200
+  );
 
   return {
-    title: sanitizeText(
-      `Alternatives à ${toolName} : comparatif des meilleurs concurrents`,
-      120
-    ),
-    description: sanitizeText(
-      `Découvrez les meilleures alternatives à ${toolName}, avec prix, fonctionnalités, cas d'usage, avantages, limites et comparatifs.`,
-      200
-    ),
+    title,
+    description,
+    keywords: [
+      `alternative ${toolName}`,
+      `alternatives ${toolName}`,
+      `${toolName} concurrent`,
+      `${toolName} équivalent`,
+      `meilleure alternative ${toolName}`,
+      'API IA',
+    ],
     alternates: { canonical: `/alternatives/${tool.slug}` },
+    openGraph: { title, description, type: 'article', url: `/alternatives/${tool.slug}` },
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 
@@ -64,17 +81,24 @@ export default async function AlternativesPage({ params }) {
     { name: `Alternatives à ${tool.name}`, url: `/alternatives/${tool.slug}` },
   ];
 
+  const content = getAlternativesContent(tool, alternatives);
+
   return (
     <>
       <JsonLd data={breadcrumbListSchema(breadcrumbs)} />
+      <JsonLd data={faqPageSchema(content.faq)} />
       <div className="container page-shell">
         <Breadcrumbs items={breadcrumbs} />
         <p className="eyebrow">Alternatives automatiques</p>
         <h1>Meilleures alternatives à {tool.name}</h1>
-        <p className="lead">
-          Comparez {tool.name} avec des solutions proches selon la catégorie, le type,
-          la note, les cas d&apos;usage et les fonctionnalités.
-        </p>
+        <p className="lead">{content.intro}</p>
+
+        <section className="section-block">
+          <h2>Critères pour bien choisir une alternative à {tool.name}</h2>
+          <ul className="check-list dense-list">
+            {content.criteria.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
 
         <div className="tool-grid">
           {alternatives.map((alternative) => (
@@ -99,6 +123,8 @@ export default async function AlternativesPage({ params }) {
             ))}
           </div>
         </section>
+
+        <Faq faq={content.faq} />
       </div>
     </>
   );

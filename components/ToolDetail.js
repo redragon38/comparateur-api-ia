@@ -21,9 +21,10 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import Faq from '@/components/Faq';
 import JsonLd from '@/components/JsonLd';
 import ToolCard from '@/components/ToolCard';
-import { breadcrumbListSchema, faqPageSchema, softwareApplicationSchema } from '@/lib/schema';
+import { breadcrumbListSchema, faqPageSchema, softwareApplicationSchema, techArticleSchema } from '@/lib/schema';
 import { getAlternativeTools, getRelatedTools, getToolRoute, slugify } from '@/lib/tools';
 import { getDetailSections } from '@/lib/presentation';
+import { getToolSummary } from '@/lib/content';
 import { sanitizeExternalUrl } from '@/lib/validation';
 
 function MetricBar({ label, value }) {
@@ -58,6 +59,7 @@ export default function ToolDetail({ tool }) {
   const related = getRelatedTools(tool, 6);
   const detail = getDetailSections(tool);
   const { profile } = detail;
+  const summary = getToolSummary(tool, alternatives);
 
   // Sanitisation des URLs externes — bloque javascript:, data:, vbscript:, etc.
   const docsUrl = sanitizeExternalUrl(tool.docsUrl || tool.website);
@@ -66,6 +68,7 @@ export default function ToolDetail({ tool }) {
   return (
     <>
       <JsonLd data={softwareApplicationSchema(tool)} />
+      <JsonLd data={techArticleSchema(tool)} />
       <JsonLd data={breadcrumbListSchema(breadcrumbs)} />
       <JsonLd data={faqPageSchema(tool.faq || [])} />
 
@@ -80,11 +83,13 @@ export default function ToolDetail({ tool }) {
                 <div>
                   <div className="tool-card-top detail-title-row">
                     <div className="logo-wrap big-logo-wrap">
-                      {/* alt="" intentionnel : image purement décorative (le nom est dans le h1) */}
                       <img
                         src={tool.logo || '/logos/default.svg'}
-                        alt=""
+                        alt={`Logo ${tool.name}`}
                         className="tool-logo tool-logo-large"
+                        width="72"
+                        height="72"
+                        decoding="async"
                       />
                     </div>
                     <div>
@@ -146,6 +151,19 @@ export default function ToolDetail({ tool }) {
                 )}
               </dl>
             </aside>
+          </section>
+
+          <section className="tldr-box section-block" aria-label="Résumé express">
+            <p className="eyebrow">En résumé</p>
+            <p className="tldr-sentence">{summary.sentence}</p>
+            <dl className="tldr-facts">
+              {summary.keyFacts.map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+              ))}
+            </dl>
+            {tool.lastVerified && (
+              <p className="tldr-updated">Dernière vérification : <time dateTime={tool.lastVerified}>{tool.lastVerified}</time></p>
+            )}
           </section>
 
           <section className="section-block detail-verdict-grid">

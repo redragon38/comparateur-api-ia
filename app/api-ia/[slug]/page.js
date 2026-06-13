@@ -21,15 +21,18 @@ import { notFound } from 'next/navigation';
 import ToolDetail from '@/components/ToolDetail';
 import { SITE_NAME } from '@/lib/site';
 import { getToolBySlug, getToolsByType, getToolRoute } from '@/lib/tools';
-import { validateSlug, sanitizeText, sanitizeExternalUrl } from '@/lib/validation';
+import { validateSlug, sanitizeText } from '@/lib/validation';
 
 export const dynamicParams = true;
+// Revalidation ISR : pages servies en cache statique, rafraîchies périodiquement.
+export const revalidate = 86400;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? Infinity
-      : Number(process.env.PREBUILD_API_LIMIT || 10);
+  // Par défaut : pré-génère TOUTES les fiches au build (indexation plus rapide,
+  // meilleur TTFB pour Googlebot). Surchargeable via PREBUILD_API_LIMIT.
+  const limit = process.env.PREBUILD_API_LIMIT
+    ? Number(process.env.PREBUILD_API_LIMIT)
+    : Infinity;
   return getToolsByType('api').slice(0, limit).map((tool) => ({ slug: tool.slug }));
 }
 
@@ -53,18 +56,34 @@ export async function generateMetadata({ params }) {
     200
   );
   const ogTitle = sanitizeText(tool.metaTitle || tool.name, 100);
-  const logoUrl = sanitizeExternalUrl(tool.logo || '/logos/default.svg');
+
+  const keywords = [
+    tool.name,
+    `${tool.name} API`,
+    `${tool.name} prix`,
+    `${tool.name} alternative`,
+    `${tool.name} avis`,
+    tool.category,
+    tool.subCategory,
+    'API IA',
+  ].filter(Boolean);
 
   return {
     title,
     description,
+    keywords,
     alternates: { canonical: getToolRoute(tool) },
     openGraph: {
       title: ogTitle,
       description,
       type: 'article',
       siteName: SITE_NAME,
-      images: [logoUrl],
+      url: getToolRoute(tool),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: ogTitle,
+      description,
     },
   };
 }
