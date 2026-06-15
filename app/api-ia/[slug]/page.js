@@ -23,14 +23,15 @@ import { SITE_NAME } from '@/lib/site';
 import { getToolBySlug, getToolsByType, getToolRoute } from '@/lib/tools';
 import { validateSlug, sanitizeText, sanitizeExternalUrl } from '@/lib/validation';
 
+// Toutes les fiches sont prérendues au build (SSG). dynamicParams reste true
+// pour servir d'éventuels nouveaux slugs ajoutés au dataset sans rebuild.
 export const dynamicParams = true;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? Infinity
-      : Number(process.env.PREBUILD_API_LIMIT || 10);
-  return getToolsByType('api').slice(0, limit).map((tool) => ({ slug: tool.slug }));
+  // Prérendu COMPLET de toutes les fiches API IA.
+  // (L'ancien slice(0, 10) limitait le build à 10 pages → cause racine du
+  //  faible taux d'indexation : les 1390 autres n'existaient pas pour Google.)
+  return getToolsByType('api').map((tool) => ({ slug: tool.slug }));
 }
 
 export async function generateMetadata({ params }) {

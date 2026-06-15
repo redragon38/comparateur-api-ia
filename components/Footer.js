@@ -18,6 +18,7 @@ export default function Footer() {
           <Link href="/">Accueil</Link>
           <Link href="/api-ia">API IA</Link>
           <Link href="/categories">Catégories</Link>
+          <Link href="/cas-usage">Cas d'usage</Link>
           <Link href="/contact">Contact</Link>
         </div>
         <div>

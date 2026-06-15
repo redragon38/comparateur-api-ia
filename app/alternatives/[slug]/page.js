@@ -19,11 +19,8 @@ import { validateSlug, sanitizeText } from '@/lib/validation';
 export const dynamicParams = true;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? Infinity
-      : Number(process.env.PREBUILD_ALTERNATIVES_LIMIT || 10);
-  return getAllTools().slice(0, limit).map((tool) => ({ slug: tool.slug }));
+  // Prérendu COMPLET (ancien slice(0,10) supprimé).
+  return getAllTools().map((tool) => ({ slug: tool.slug }));
 }
 
 export async function generateMetadata({ params }) {

@@ -5,9 +5,11 @@ export default function robots() {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/admin/', '/private/']
+      disallow: ['/api/', '/admin/', '/private/'],
     },
+    // sitemap.xml est désormais un INDEX pointant vers les sitemaps thématiques
+    // (providers, alternatives, comparisons, categories, usecases…).
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_URL
+    host: SITE_URL,
   };
 }

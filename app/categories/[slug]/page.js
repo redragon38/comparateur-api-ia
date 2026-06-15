@@ -7,6 +7,7 @@
  *  - notFound() pour les slugs invalides (pas de 500)
  */
 
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import JsonLd from '@/components/JsonLd';
@@ -48,6 +49,7 @@ export default async function CategoryPage({ params }) {
   if (!category) notFound();
 
   const tools = getPublicTools(getToolsByCategorySlug(slug));
+  const rawTools = getToolsByCategorySlug(slug);
   const breadcrumbs = [
     { name: 'Accueil', url: '/' },
     { name: 'Catégories', url: '/categories' },
@@ -65,6 +67,18 @@ export default async function CategoryPage({ params }) {
           {category.count.toLocaleString('fr-FR')} API IA disponibles dans cette catégorie.
         </p>
         <ToolBrowser tools={tools} title={`API IA : ${category.name}`} />
+
+        {/* Index HTML complet rendu côté serveur — voir /api-ia pour la raison. */}
+        <nav className="sitemap-links section-block" aria-label={`Toutes les API IA : ${category.name}`}>
+          <h2>Toutes les API IA : {category.name}</h2>
+          <ul className="link-columns">
+            {rawTools.map((tool) => (
+              <li key={tool.slug}>
+                <Link href={`/api-ia/${tool.slug}`}>{tool.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </>
   );

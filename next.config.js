@@ -125,9 +125,10 @@ const securityHeaders = [
   // CSP
   { key: 'Content-Security-Policy', value: cspDirectives },
 
-  // Cache-Control pour les pages HTML : pas de cache public des pages dynamiques
-  // (Next.js gère ce header par route, mais on ajoute un fallback prudent)
-  { key: 'X-Robots-Tag', value: isProduction ? 'index, follow' : 'noindex, nofollow' },
+  // NOTE : on NE met PAS de X-Robots-Tag global ici.
+  // L'indexation est gérée page par page via `metadata.robots` (App Router).
+  // Un header global "index, follow" empêcherait de désindexer proprement
+  // une page de faible qualité ; un "noindex" global tuerait tout le SEO.
 ];
 
 // ─── Configuration Next.js ────────────────────────────────────────────────────

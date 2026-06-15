@@ -20,21 +20,18 @@
  */
 
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbListSchema } from '@/lib/schema';
-import { getComparisonPairs, getToolBySlug, getToolRoute, parseComparisonSlug } from '@/lib/tools';
+import { getComparisonPairs, getToolBySlug, getToolRoute, parseComparisonSlug, canonicalComparisonSlug } from '@/lib/tools';
 import { validateComparisonSlug, validateSlug, sanitizeText } from '@/lib/validation';
 
 export const dynamicParams = true;
 
 export function generateStaticParams() {
-  const limit =
-    process.env.PREBUILD_ALL === 'true'
-      ? null
-      : Number(process.env.PREBUILD_COMPARISON_LIMIT || 20);
-  return getComparisonPairs(limit);
+  // Prérendu COMPLET des paires canoniques (ancien cap de 20 supprimé).
+  return getComparisonPairs(null);
 }
 
 export async function generateMetadata({ params }) {
@@ -90,6 +87,13 @@ export default async function ComparisonPage({ params }) {
   const first = getToolBySlug(toolA);
   const second = getToolBySlug(toolB);
   if (!first || !second || first.slug === second.slug) notFound();
+
+  // Canonicalisation : redirige b-vs-a vers a-vs-b (ordre alpha) pour éviter
+  // la duplication. Une seule URL indexable par paire.
+  const canonical = canonicalComparisonSlug(first.slug, second.slug);
+  if (comparison !== canonical) {
+    redirect(`/comparatif/${canonical}`);
+  }
 
   const breadcrumbs = [
     { name: 'Accueil', url: '/' },
